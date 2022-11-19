@@ -55,7 +55,9 @@ int main(int argc, char const *argv[])
     
     while (head != NULL)
     {
-        remove_node_by_index(&head, rand() % get_node_list_length(head));
+        int * i = remove_node_by_index(&head, rand() % get_node_list_length(head), sizeof(int));
+    
+        free(i);
     }
     
 

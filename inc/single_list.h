@@ -9,8 +9,29 @@
  * 
  */
 
+#ifndef SINGLE_LIST_H 
+#define SINGLE_LIST_H 
+
 #include <stdio.h>
 #include <stdint.h>
+
+#define EXIT_ON_NO_MEM(ptr, msg_no_mem)  if(ptr == NULL) \
+                                        {\
+                                            fprintf(stderr, msg_no_mem);\
+                                            exit(EXIT_FAILURE);\
+                                        }
+
+#define RETURN_ON_NO_MEM(ptr, msg_no_mem)  if(ptr == NULL) \
+                                        {\
+                                            fprintf(stderr, msg_no_mem);\
+                                            return;\
+                                        }
+
+#define RETURN_VAL_ON_NO_MEM(ptr, msg_no_mem, retval)  if(ptr == NULL) \
+                                        {\
+                                            fprintf(stderr, msg_no_mem);\
+                                            return retval;\
+                                        }
 
 typedef struct node node_t;
 
@@ -61,21 +82,21 @@ void remove_node(node_t **parent, node_t *child);
  * @param parent pointer to the head node of the list
  * @param index index of node to be removed
  */
-void remove_node_by_index(node_t **parent, size_t index);
+void * remove_node_by_index(node_t **parent, size_t index, size_t data_size);
 
 /**
  * @brief delete a node with it's data
  * 
  * @param node 
  */
-void delete_node(node_t *node);
+void * delete_node(node_t *node, size_t data_size);
 
 /**
  * @brief pop de last 
  * 
  * @param parent 
  */
-void pop_node(node_t **parent);
+void * pop_node(node_t **parent, size_t data_size);
 
 /**
  * @brief Set the node data object
@@ -128,3 +149,4 @@ node_t * get_next_node(node_t *parent);
  */
 uint32_t get_node_list_length(node_t *head);
 
+#endif

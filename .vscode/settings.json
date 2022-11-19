@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "list": "c",
-        "single_list.h": "c"
+        "single_list.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "stdlib.h": "c"
     }
 }
