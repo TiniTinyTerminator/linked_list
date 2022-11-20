@@ -100,19 +100,37 @@ playlist_item_t * get_playlist_item_by_index(playlist_item_t *playlist, uint32_t
     return get_node_by_index(playlist, index);
 }
 
-playlist_item_t * get_playlist_item_song(playlist_item_t *playlist, char * song_name)
+playlist_item_t * get_playlist_item_by_song(playlist_item_t *playlist, char * song_name)
 {
 
-    while (1)
+    while (playlist != NULL)
     {
         const song_info_t * data = get_node_data(playlist);
 
-        if(strcmp(data->title, song_name) != 0)
+        if(strcmp(data->title, song_name) == 0)
             break;
 
         playlist = get_next_node(playlist);
 
-        RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
+        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
+    }
+    
+    return playlist;
+}
+
+playlist_item_t * get_playlist_item_by_artist(playlist_item_t *playlist, char * artist_name)
+{
+
+    while (playlist != NULL)
+    {
+        const song_info_t * data = get_node_data(playlist);
+
+        if(strcmp(data->artist, artist_name) == 0)
+            break;
+
+        playlist = get_next_node(playlist);
+
+        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
     }
     
     return playlist;
@@ -136,13 +154,13 @@ void set_playlist_item_data(playlist_item_t *playlist_item, const song_info_t *s
 void play_next(playlist_item_t **playlist)
 {
     playlist_item_t * next = get_next_node(*playlist);
-    song_info_t * info = delete_node(*playlist, sizeof(song_info_t));
+    song_info_t * data = delete_node(*playlist, sizeof(song_info_t));
 
-    print_song_info(info);
+    print_song_info(data);
 
-    clean_song_info(info);
+    clean_song_info(data);
 
-    free(info);
+    free(data);
 
     *playlist = next;
 }
@@ -164,9 +182,9 @@ void print_playlist(playlist_item_t *playlist)
 
 void print_playlist_item(playlist_item_t *playlist)
 {
-    const song_info_t * info = get_node_data(playlist);
+    const song_info_t * data = get_node_data(playlist);
 
-    print_song_info(info);
+    print_song_info(data);
 }
 
 void pop_playlist(playlist_item_t **playlist)
@@ -188,6 +206,63 @@ void remove_playlist_item_by_index(playlist_item_t **playlist, uint32_t index)
     free(data);
 }
 
-void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_name);
+void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_name)
+{
+    playlist_item_t *item = *playlist;
+    playlist_item_t *prev = NULL;
 
-void remvoe_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name);
+    while (item != NULL)
+    {
+        const song_info_t * data = get_node_data(item);
+
+        if(strcmp(data->title, song_name) == 0)
+            break;
+
+        prev = item;
+        item = get_next_node(item);
+
+        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
+    }
+
+    if(item == *playlist)
+        *playlist = get_next_node(*playlist);
+    if(prev)
+        set_next_node(prev, get_next_node(item));
+
+    song_info_t *data = delete_node(item, sizeof(song_info_t));
+
+    clean_song_info(data);
+
+    free(data);
+}
+
+
+void remove_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name)
+{
+    playlist_item_t *item = *playlist;
+    playlist_item_t *prev = NULL;
+
+    while (item != NULL)
+    {
+        const song_info_t * data = get_node_data(item);
+
+        if(strcmp(data->artist, artist_name) == 0)
+            break;
+
+        prev = item;
+        item = get_next_node(item);
+
+        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
+    }
+
+    if(item == *playlist)
+        *playlist = get_next_node(*playlist);
+    if(prev)
+        set_next_node(prev, get_next_node(item));
+
+    song_info_t *data = delete_node(item, sizeof(song_info_t));
+
+    clean_song_info(data);
+
+    free(data);
+}

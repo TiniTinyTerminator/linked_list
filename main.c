@@ -41,9 +41,23 @@ int main(int argc, char const *argv[])
 
     insert_playlist_item(&playlist, 1, &first);
     
-    playlist_item_t * third = get_playlist_item_by_index(playlist, 3);
+    // playlist_item_t * third = get_playlist_item_by_index(playlist, 3);
 
-    print_playlist_item(third);
+    // print_playlist_item(third);
+
+    // const song_info_t *tmp = get_playlist_item_data(third);
+
+    // print_song_info(tmp);
+
+    // remove_playlist_item_by_index(&playlist, 2);
+
+    print_playlist_item(get_playlist_item_by_song(playlist, "PRAY"));
+    print_playlist_item(get_playlist_item_by_artist(playlist, "adele"));
+
+    printf("\n\n");
+
+    remove_playlist_item_by_song_name(&playlist, "WIN");
+    remove_playlist_item_by_artist_name(&playlist, "Beyonce");
 
     print_playlist(playlist);
 

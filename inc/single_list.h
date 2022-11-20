@@ -142,6 +142,14 @@ node_t * get_node_by_index(node_t *parent, uint32_t index);
 node_t * get_next_node(node_t *parent);
 
 /**
+ * @brief Set the next node
+ * 
+ * @param node 
+ * @param next_node 
+ */
+void set_next_node(node_t *node, node_t *next_node);
+
+/**
  * @brief Get the node list length
  * 
  * @param head first node in list

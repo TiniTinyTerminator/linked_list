@@ -192,6 +192,11 @@ node_t * get_next_node(node_t *node)
     return node->next;
 }
 
+void set_next_node(node_t *node, node_t *next_node)
+{
+    node->next = next_node;
+}
+
 uint32_t get_node_list_length(node_t *head)
 {
     uint32_t index = 0;

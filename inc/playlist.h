@@ -53,22 +53,33 @@ void prepend_playlist_item(playlist_item_t **playlist, song_info_t * info);
 // tested
 void insert_playlist_item(playlist_item_t **playlist, uint32_t index, song_info_t * info);
 // done
+// tested
 playlist_item_t * get_playlist_item_by_index(playlist_item_t *playlist, uint32_t index);
 // done
-playlist_item_t * get_playlist_item_song(playlist_item_t *playlist, char * song_name);
+playlist_item_t * get_playlist_item_by_song(playlist_item_t *playlist, char * song_name);
 // done
+playlist_item_t * get_playlist_item_by_artist(playlist_item_t *playlist, char * song_name);
+// done
+// tested
 const song_info_t * get_playlist_item_data(playlist_item_t *playlist);
 // done
+// tested
 void copy_playlist_item_data(playlist_item_t *playlist_item, song_info_t *dest);
 // done
+// tested
 void set_playlist_item_data(playlist_item_t *playlist, const song_info_t *src);
 // done
+// tested
 void play_next(playlist_item_t **playlist);
-// onde
+// done
+// tested
 void pop_playlist(playlist_item_t **playlist);
-
+// done
+// tested
 void remove_playlist_item_by_index(playlist_item_t **playlist, uint32_t index);
-
+// done
+// tested
 void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_name);
-
-void remvoe_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name);
+// done
+// tested
+void remove_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name);
