@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "single_list.h"
+#include "playlist.h"
 
 int main(int argc, char const *argv[])
 {
@@ -23,41 +23,33 @@ int main(int argc, char const *argv[])
 
     srand(time(&t));
 
-    node_t *head = create_node(sizeof(int));
-
-    uint32_t n = rand();
-
-    set_node_data(head, &n, sizeof(int));
-
-    for(uint32_t i = 0; i < 1000; i++)
-    {
-        node_t *tmp = create_node(sizeof(uint32_t));
-
-        n = rand();
-
-        set_node_data(tmp, &n, sizeof(int));
-
-        printf("%d\n\r", get_node_list_length(head));
-
-        insert_node(&head, tmp, rand() % get_node_list_length(head));
-    }
-
-    node_t *curr = head;
-
-    while (curr != NULL)
-    {
-        const uint32_t *tmp = get_node_data(curr);
-
-        printf("%d\n\r", *tmp);
-
-        curr = get_next_node(curr);
-    }
+    playlist_item_t * playlist = create_playlist_item();
     
-    while (head != NULL)
-    {
-        int * i = remove_node_by_index(&head, rand() % get_node_list_length(head), sizeof(int));
+    song_info_t first = create_song_info("cuff it", "Beyonce");
+
+    change_song_info(&first, "put a ringo on it", "Beyonce");
+
+    set_playlist_item_data(playlist, &first);
+
+    first = create_song_info("hello", "adele");
+
+    append_playlist_item(&playlist, &first);
+
+    first = create_song_info("PRAY", "Kendrick lamar");
+    prepend_playlist_item(&playlist, &first);
+    first = create_song_info("WIN", "Jay Rock");
+
+    insert_playlist_item(&playlist, 1, &first);
     
-        free(i);
+    playlist_item_t * third = get_playlist_item_by_index(playlist, 3);
+
+    print_playlist_item(third);
+
+    print_playlist(playlist);
+
+    while (playlist != NULL)
+    {
+        pop_playlist(&playlist);
     }
     
 

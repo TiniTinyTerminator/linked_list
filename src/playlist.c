@@ -25,15 +25,26 @@ playlist_item_t * create_playlist_item()
 
 song_info_t create_song_info(char * song, char * artist)
 {
-    song_info_t data = {};
-
-    data.title = calloc(strlen(song) + 1, sizeof(char));
-    data.artist = calloc(strlen(artist) + 1, sizeof(char));
+    song_info_t data = {
+        calloc(strlen(song) + 1, sizeof(char)),
+        calloc(strlen(artist) + 1, sizeof(char))
+    };
 
     strcpy(data.title, song);
     strcpy(data.artist, artist);
 
     return data;
+}
+
+void change_song_info(song_info_t *info, char * song, char * artist)
+{
+    clean_song_info(info);
+            
+    info->title = calloc(strlen(song) + 1, sizeof(char));
+    info->artist = calloc(strlen(artist) + 1, sizeof(char));
+
+    strcpy(info->title, song);
+    stpcpy(info->artist, artist);
 }
 
 void clean_song_info(song_info_t * info)
@@ -51,35 +62,35 @@ void copy_song_info(song_info_t * src, song_info_t * dest)
     strcpy(dest->artist, dest->artist);
 }
 
-void append_playlist_item(playlist_item_t **playlist, char * song, char * artist)
+void append_playlist_item(playlist_item_t **playlist, song_info_t * info)
 {
     playlist_item_t * node = create_playlist_item();
 
-    song_info_t data = create_song_info(song, artist);
+    // song_info_t data = create_song_info(song, artist);
 
-    set_node_data(node, &data, sizeof(song_info_t));
+    set_node_data(node, info, sizeof(song_info_t));
 
     append_node(playlist, node);
 }
 
-void prepend_playlist_item(playlist_item_t **playlist, char * song, char * artist)
+void prepend_playlist_item(playlist_item_t **playlist, song_info_t * info)
 {
     playlist_item_t * item = create_playlist_item();
 
-    song_info_t data = create_song_info(song, artist);
+    // song_info_t data = create_song_info(song, artist);
 
-    set_node_data(item, &data, sizeof(song_info_t));
+    set_node_data(item, info, sizeof(song_info_t));
 
     prepend_node(playlist, item);
 }
 
-void insert_playlist_item(playlist_item_t **playlist, uint32_t index, char * song, char * artist)
+void insert_playlist_item(playlist_item_t **playlist, uint32_t index, song_info_t * info)
 {
     playlist_item_t * item = create_playlist_item();
 
-    song_info_t data = create_song_info(song, artist);
+    // song_info_t data = create_song_info(song, artist);
 
-    set_node_data(item, &data, sizeof(song_info_t));
+    set_node_data(item, info, sizeof(song_info_t));
 
     insert_node(playlist, item, index);
 }
@@ -117,7 +128,7 @@ void copy_playlist_item_data(playlist_item_t *playlist_item, song_info_t *dest)
     copy_node_data(playlist_item, dest, sizeof(song_info_t));
 }
 
-void set_playlist_item_data(playlist_item_t *playlist_item, song_info_t *src)
+void set_playlist_item_data(playlist_item_t *playlist_item, const song_info_t *src)
 {
     set_node_data(playlist_item, src, sizeof(song_info_t));
 }
@@ -131,12 +142,14 @@ void play_next(playlist_item_t **playlist)
 
     clean_song_info(info);
 
+    free(info);
+
     *playlist = next;
 }
 
 void print_song_info(const song_info_t * song_info)
 {
-    printf("%s by %s\n\r", song_info->title, song_info->artist);
+    printf("\"%s\" by %s\n\r", song_info->title, song_info->artist);
 }
 
 void print_playlist(playlist_item_t *playlist)
@@ -158,5 +171,23 @@ void print_playlist_item(playlist_item_t *playlist)
 
 void pop_playlist(playlist_item_t **playlist)
 {
-    clean_song_info(pop_node(playlist, sizeof(song_info_t)));
+    song_info_t *data = pop_node(playlist, sizeof(song_info_t));
+
+    clean_song_info(data);
+
+    free(data);
 }
+
+
+void remove_playlist_item_by_index(playlist_item_t **playlist, uint32_t index)
+{
+    song_info_t *data = remove_node_by_index(playlist, index, sizeof(song_info_t));
+
+    clean_song_info(data);
+    
+    free(data);
+}
+
+void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_name);
+
+void remvoe_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name);
