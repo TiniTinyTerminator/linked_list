@@ -4,7 +4,7 @@ project(linked_list_test VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(linked_list_test main.c src/single_list.c)
+add_executable(linked_list_test main.c src/single_list.c src/playlist.c)
 
 include_directories(./inc)
 

@@ -16,24 +16,6 @@
 
 #include "single_list.h"
 
-#define EXIT_ON_NO_MEM(ptr, msg_no_mem)  if(ptr == NULL) \
-                                        {\
-                                            fprintf(stderr, msg_no_mem);\
-                                            exit(EXIT_FAILURE);\
-                                        }
-
-#define RETURN_ON_NO_MEM(ptr, msg_no_mem)  if(ptr == NULL) \
-                                        {\
-                                            fprintf(stderr, msg_no_mem);\
-                                            return;\
-                                        }
-
-#define RETURN_VAL_ON_NO_MEM(ptr, msg_no_mem, retval)  if(ptr == NULL) \
-                                        {\
-                                            fprintf(stderr, msg_no_mem);\
-                                            return retval;\
-                                        }
-
 struct node
 {
     void * data;
@@ -47,25 +29,31 @@ node_t * create_node(size_t data_size)
 
     EXIT_ON_NO_MEM(tmp, "couldn't allocate memory for node!");
 
-    tmp->data = malloc(data_size * sizeof(char));
+    tmp->data = calloc(data_size, sizeof(char));
 
     EXIT_ON_NO_MEM(tmp, "couldn't allocate memory for data!");
 
     return tmp;
 }
 
-void delete_node(node_t *node)
+void * delete_node(node_t *node, size_t data_size)
 {
 
-    RETURN_ON_NO_MEM(node, "pointer directed to null");
+    RETURN_VAL_ON_NO_MEM(node, "pointer directed to null", NULL);
     
-    RETURN_ON_NO_MEM(node->data, "no data to free");
+    RETURN_VAL_ON_NO_MEM(node->data, "no data to free", NULL);
+
+    void * data = malloc(data_size * sizeof(char));
+
+    copy_node_data(node, data, data_size);
 
     free(node->data);
 
     memset(node, 0, sizeof(node_t));
 
     free(node);
+
+    return data;
 }
 
 void append_node(node_t **parent, node_t *child)
@@ -117,7 +105,7 @@ void insert_node(node_t **parent, node_t *child, size_t index)
     
 }
 
-void remove_node_by_index(node_t **parent, size_t index)
+void * remove_node_by_index(node_t **parent, size_t index, size_t data_size)
 {
 
     node_t * curr = *parent;
@@ -125,7 +113,7 @@ void remove_node_by_index(node_t **parent, size_t index)
 
     while(index--)
     {
-        RETURN_ON_NO_MEM(curr, "index out of range!\n");
+        RETURN_VAL_ON_NO_MEM(curr, "index out of range!\n", NULL);
 
         prev = curr;
         curr = curr->next;
@@ -136,20 +124,20 @@ void remove_node_by_index(node_t **parent, size_t index)
     else
         *parent = curr->next;
 
-    delete_node(curr);
+   return delete_node(curr, data_size);
 }
 
-void pop_node(node_t **parent)
+void * pop_node(node_t **parent, size_t data_size)
 {
     node_t * curr = *parent;
     node_t * prev = NULL;
 
     if(curr == NULL)
-        RETURN_ON_NO_MEM(curr, "No data is allocated on this pointer!\n");
+        RETURN_VAL_ON_NO_MEM(curr, "No data is allocated on this pointer!\n", NULL);
 
     while(curr->next != NULL)
     {
-        RETURN_ON_NO_MEM(curr, "index out of range!\n");
+        RETURN_VAL_ON_NO_MEM(curr, "index out of range!\n", NULL);
 
         prev = curr;
         curr = curr->next;
@@ -160,7 +148,7 @@ void pop_node(node_t **parent)
     else
         *parent = NULL;
 
-    delete_node(curr);
+    return delete_node(curr, data_size);
 }
 
 void set_node_data(node_t *node, const void * data, size_t data_size)
@@ -202,6 +190,11 @@ const void * get_node_data(node_t *node)
 node_t * get_next_node(node_t *node)
 {
     return node->next;
+}
+
+void set_next_node(node_t *node, node_t *next_node)
+{
+    node->next = next_node;
 }
 
 uint32_t get_node_list_length(node_t *head)
