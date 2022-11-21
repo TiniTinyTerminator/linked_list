@@ -32,7 +32,15 @@ typedef struct fib_entry fib_entry_t;
 
 const fib_entry_t create_fib_entry(uint32_t sequence_length);
 
-node_t * create_fib_list_entry();
+node_t * create_fib_list_entry(uint32_t sequence_length);
+
+void remove_fib_list_entry(node_t **head, uint32_t sequence_length);
+
+void print_sequence(const fib_entry_t *entry);
+
+void print_all_sequences(node_t *head);
+
+void append_fib_list_entry(node_t **head, uint32_t sequence_length);
 
 void set_fib_list_entry(node_t *node, fib_entry_t *data);
 
@@ -40,21 +48,20 @@ const fib_entry_t * get_fib_list_data(node_t *node);
 
 int main(int argc, char const *argv[])
 {
-    node_t *head = NULL;
+    node_t *head = create_fib_list_entry(3);
 
-    for (uint32_t i = 5; i < 1000; i++)
+    for (uint32_t i = 5; i < 12; i++)
     {
-        fib_entry_t entry = create_fib_entry(i);
 
-        node_t *node = create_fib_list_entry();
+        append_fib_list_entry(&head, i);
 
-        set_fib_list_entry(node, &entry);
-
-        append_node(&head, node);
-
-        printf("%s\n\r", entry.sequence);
     }
-    
+
+    remove_fib_list_entry(&head, 3);
+    remove_fib_list_entry(&head, 8);
+
+    print_all_sequences(head);
+
     while (head)
     {
         fib_entry_t * data = pop_node(&head, sizeof(fib_entry_t));
@@ -64,15 +71,12 @@ int main(int argc, char const *argv[])
         free(data);
     }
     
-
     return 0;
 }
 
 const fib_entry_t create_fib_entry(uint32_t sequence_length)
 {
     fib_entry_t entry = {};
-
-    // RETURN_VAL_ON_NO_MEM(entry, "error, couldn't allocate memory!\n\r", NULL);
 
     entry.sequence_length = sequence_length;
 
@@ -152,9 +156,13 @@ const fib_entry_t create_fib_entry(uint32_t sequence_length)
     return entry;
 }
 
-node_t * create_fib_list_entry()
+node_t * create_fib_list_entry(uint32_t sequence_length)
 {
+    fib_entry_t entry = create_fib_entry(sequence_length);
+
     node_t *node = create_node(sizeof(fib_entry_t));
+    
+    set_fib_list_entry(node, &entry);
     
     return node;
 }
@@ -169,3 +177,58 @@ const fib_entry_t * get_fib_list_data(node_t *node)
     return get_node_data(node);
 }
 
+void append_fib_list_entry(node_t **head, uint32_t sequence_length)
+{
+    node_t *node = create_fib_list_entry(sequence_length);
+
+    append_node(head, node);
+}
+
+void remove_fib_list_entry(node_t **head, uint32_t sequence_length)
+{
+    node_t *curr = *head;
+    node_t *prev = NULL;
+
+    while (curr)
+    {
+        const fib_entry_t *data = get_node_data(curr);
+
+        if(data->sequence_length == sequence_length)
+        {
+            if(prev)
+                set_next_node(prev, get_next_node(curr));
+            else
+                *head = get_next_node(curr);
+
+            fib_entry_t *tmp = delete_node(curr, sizeof(fib_entry_t));
+
+            free(tmp->sequence);
+            free(tmp);
+
+            return;
+        }
+        else
+        {
+            prev = curr;
+            curr = get_next_node(curr);
+        }
+    }
+    
+}
+
+void print_sequence(const fib_entry_t *entry)
+{
+    printf("sequence length: %d\t sequence: %s\n\r", entry->sequence_length, entry->sequence);
+}
+
+void print_all_sequences(node_t *head)
+{
+    while (head)
+    {
+        const fib_entry_t * data = get_fib_list_data(head);
+        print_sequence(data);
+
+        head = get_next_node(head);
+    }
+    
+}
