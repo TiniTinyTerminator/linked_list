@@ -11,211 +11,152 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <time.h>
+#include <math.h>
 
 #include "single_list.h"
-#include "playlist.h"
 
-#define MAX_STR_LEN 255
+#define FIB_BASE "0-1-"
+#define FIB_CALC_START 2
+struct fib_entry {
 
-#define PLAY_NEXT 1
-#define ADD_SONG 2
-#define REMOVE_SONG 3
-#define PRINT_LIST 4
-#define EXIT_APP 5
+    int sequence_length;
 
-void add_new_song(playlist_item_t **playlist);
+    char *sequence;
 
-void remove_song(playlist_item_t **playlist);
+};
+
+typedef struct fib_entry fib_entry_t;
+
+fib_entry_t * create_fib_entry(uint32_t sequence_length);
+
+node_t * create_fib_list_entry();
+
+void set_fib_list_entry(node_t *node, fib_entry_t *data);
+
+const fib_entry_t * get_fib_list_data(node_t *node);
 
 int main(int argc, char const *argv[])
 {
-    struct node * playlist = create_playlist_item();
+    node_t *head = NULL;
 
-    song_info_t info = create_song_info("New York","Jay-z, Alicia Keys");
+    for (uint32_t i = 5; i < 10; i++)
+    {
+        fib_entry_t *entry = create_fib_entry(i);
 
-    set_playlist_item_data(playlist, &info);
+        node_t *node = create_fib_list_entry();
 
-    info = create_song_info("because you move me","thinlicker");
+        set_fib_list_entry(node, entry);
 
-    append_playlist_item(&playlist, &info);
+        append_node(&head, node);
 
-    info = create_song_info("Finish line","Lissa");
-
-    append_playlist_item(&playlist, &info);
-    
-    info = create_song_info("Last Moment","Patrick Aretz");
-
-    append_playlist_item(&playlist, &info);
-
-    info = create_song_info("Nobody","Does it matter");
-
-    append_playlist_item(&playlist, &info);
-
-    printf("welcome to the playlist creator :D\n\r");
-
-    uint32_t options = 0;
-
-    while(options != EXIT_APP) {
-        options = 0;
-        printf("please select one of the options below:\n \
-        1) play next song\n \
-        2) add song to list\n \
-        3) remove song from playlist\n \
-        4) show the playlist\n \
-        5) exit the playlist creator\n");
-
-        scanf(" %d", &options);
-
-        // options = 2;
-
-        switch (options)
-        {
-        case PLAY_NEXT:
-            play_next(&playlist);
-            break;
-        case ADD_SONG:
-            add_new_song(&playlist);
-            break;
-        case REMOVE_SONG:
-            remove_song(&playlist);        
-            break;
-        case PRINT_LIST:
-            print_playlist(playlist);
-            break;
-        default:
-            break;
-        }
+        printf("%s\n\r", entry->sequence);
     }
-
-    flush_playlist(&playlist);
 
     return 0;
 }
 
-#define ADD_BY_INDEX 1
-#define ADD_AT_START 2
-#define ADD_AT_END 3
-#define RETURN_TO_MENU -1
-
-void add_new_song(playlist_item_t **playlist)
+fib_entry_t *create_fib_entry(uint32_t sequence_length)
 {
+    fib_entry_t *entry = malloc(sizeof(fib_entry_t));
 
-    char option = 0;
+    RETURN_VAL_ON_NO_MEM(entry, "error, couldn't allocate memory!\n\r", NULL);
 
-    while (1)
+    entry->sequence_length = sequence_length;
+
+    if (sequence_length <= 1)
     {
-        printf("\nplease select one of the options below:\n \
-    1) add at specific index\n \
-    2) add at the end of the playlist\n \
-    3) add at the start of the playlist\n \
-    4) cancel and return to menu\n");
-
-        scanf("%d", &option);
-        fflush(stdin);
-        if(option == 4) break;
-        
-        char song_name[MAX_STR_LEN] = "";
-        char song_artist[MAX_STR_LEN] = "";
-
-        printf("name of the song: ");
-        scanf(" %[^\n]",song_name);
-        fflush(stdin);
-
-        printf("name of the artist: ");
-        scanf(" %[^\n]",song_artist);
-        
-        song_info_t info = create_song_info(song_name, song_artist);
-
-        switch (option)
-        {
-        case ADD_BY_INDEX:
-            get_index:
-
-            uint32_t playlist_len = get_node_list_length(*playlist);
-
-            printf("give the index you would like to add the song to [1 to %d]:\t", playlist_len + 1);
-
-            uint32_t index = 0;
-
-            scanf("%d", &index);
-
-            if(index < 1 || index > (playlist_len + 1))
-                goto get_index;
-            
-            if(index == (playlist_len + 1))
-                append_playlist_item(playlist, &info);
-            else
-                insert_playlist_item(playlist, index - 1, &info);
-            break;
-        case ADD_AT_START:
-            prepend_playlist_item(playlist, &info);
-            break;
-        case ADD_AT_END:
-            append_playlist_item(playlist, &info);
-            break;
-        default:
-            break;
-        }
+        fprintf(stderr, "Can't have a sequence of 1 or lower\n\r");
+        return NULL;
     }
+    else if (sequence_length == 2)
+    {
+        entry->sequence = calloc(4, sizeof(char));
+        memcpy(entry->sequence, FIB_BASE, 3);
+    }
+    else if (sequence_length > 2)
+    {
+        char *number_digits = calloc((sequence_length - FIB_CALC_START), sizeof(char));
+        uint64_t *number = calloc((sequence_length - FIB_CALC_START), sizeof(uint64_t));
+
+        RETURN_VAL_ON_NO_MEM(number_digits, "error, couldn't allocate memory!\n\r", NULL);
+        RETURN_VAL_ON_NO_MEM(number, "error, couldn't allocate memory!\n\r", NULL);
+
+        // starting values of fibonacci sequence
+        uint64_t a = 0, b = 1;
+
+        // taking taking the dashes in the string into account plus the terminator value \0
+        uint32_t s_len = sequence_length;
+
+        // calculate the fibonacci sequence plus the length of the number
+        for (uint32_t i = 0; i < (sequence_length - FIB_CALC_START); i++)
+        {
+            number[i] = a + b;
+
+            number_digits[i] = (uint32_t)(floor(log10(number[i])) + 1);
+
+            s_len += number_digits[i];
+
+            a = b;
+            b = number[i];
+        }
+
+        // allocate necessary memory
+        entry->sequence = calloc(s_len, sizeof(char));
+
+        RETURN_VAL_ON_NO_MEM(entry->sequence, "error, couldn't allocate memory!\n\r", NULL);
+
+        // copy initial string of fibonacci sequence
+        memcpy(entry->sequence, FIB_BASE, 4);
+
+        char *seq = entry->sequence + 4;
+
+        for (uint32_t i = 0; i < (sequence_length - FIB_CALC_START); i++)
+        {
+            // char *tmp = calloc((number_digits[i] + 1), sizeof(char));
+
+#ifdef __linux
+            sprintf(seq, "%llu", number[i]);
+#elif __WIN32
+            sprintf(seq, "%I64u", number[i]);
+#endif
+            uint32_t n_len = number_digits[i];
+
+            // memcpy(seq, tmp, n_len);
+
+            seq += n_len;
+
+            if (i < (sequence_length - FIB_CALC_START - 1))
+                *seq = '-';
+
+            seq++;
+
+            // free(tmp);
+        }
+
+        free(number);
+        free(number_digits);
+    }
+
+    return entry;
+}
+
+node_t * create_fib_list_entry()
+{
+    node_t *node = create_node(sizeof(fib_entry_t));
     
-
+    return node;
 }
 
-void remove_song(playlist_item_t **playlist)
+void set_fib_list_entry(node_t *node, fib_entry_t *data)
 {
-
-    char option = 0;
-
-    while (1)
-    {
-        printf("please select one of the options below:\n \
-    1) remove at specific index\n \
-    2) remove by song name\n \
-    3) remove by artist name\n \
-    4) cancel and return to menu\n");
-
-        scanf("%d", &option);
-        
-        if(option == 4) break;
-        
-        char song_name[MAX_STR_LEN] = "";
-        char song_artist[MAX_STR_LEN] = "";
-
-        switch (option)
-        {
-        case ADD_BY_INDEX:
-            get_index:
-
-            uint32_t playlist_len = get_node_list_length(*playlist);
-
-            printf("give the index from the song to be removed [1 to %d]:\t", playlist_len);
-
-            uint32_t index = 0;
-
-            scanf("%d", &index);
-
-            if(index < 1 || index > playlist_len)
-                goto get_index;
-            
-            remove_playlist_item_by_index(playlist, index - 1);
-            break;
-        case ADD_AT_START:
-            printf("name of the song: ");
-            scanf(" %[^\n]", song_name);
-
-            remove_playlist_item_by_song_name(playlist, song_name);
-            break;
-        case ADD_AT_END:
-            printf("name of the artist: ");
-            scanf(" %[^\n]", song_artist);        
-
-            remove_playlist_item_by_artist_name(playlist, song_artist);
-            break;
-        default:
-            break;
-        }
-    }
+    set_node_data(node, data, sizeof(fib_entry_t));
 }
+
+const fib_entry_t * get_fib_list_data(node_t *node)
+{
+    return get_node_data(node);
+}
+
