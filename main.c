@@ -30,7 +30,7 @@ struct fib_entry {
 
 typedef struct fib_entry fib_entry_t;
 
-fib_entry_t * create_fib_entry(uint32_t sequence_length);
+const fib_entry_t create_fib_entry(uint32_t sequence_length);
 
 node_t * create_fib_list_entry();
 
@@ -42,60 +42,72 @@ int main(int argc, char const *argv[])
 {
     node_t *head = NULL;
 
-    for (uint32_t i = 5; i < 10; i++)
+    for (uint32_t i = 5; i < 1000; i++)
     {
-        fib_entry_t *entry = create_fib_entry(i);
+        fib_entry_t entry = create_fib_entry(i);
 
         node_t *node = create_fib_list_entry();
 
-        set_fib_list_entry(node, entry);
+        set_fib_list_entry(node, &entry);
 
         append_node(&head, node);
 
-        printf("%s\n\r", entry->sequence);
+        printf("%s\n\r", entry.sequence);
     }
+    
+    while (head)
+    {
+        fib_entry_t * data = pop_node(&head, sizeof(fib_entry_t));
+
+        free(data->sequence);
+
+        free(data);
+    }
+    
 
     return 0;
 }
 
-fib_entry_t *create_fib_entry(uint32_t sequence_length)
+const fib_entry_t create_fib_entry(uint32_t sequence_length)
 {
-    fib_entry_t *entry = malloc(sizeof(fib_entry_t));
+    fib_entry_t entry = {};
 
-    RETURN_VAL_ON_NO_MEM(entry, "error, couldn't allocate memory!\n\r", NULL);
+    // RETURN_VAL_ON_NO_MEM(entry, "error, couldn't allocate memory!\n\r", NULL);
 
-    entry->sequence_length = sequence_length;
+    entry.sequence_length = sequence_length;
 
     if (sequence_length <= 1)
     {
         fprintf(stderr, "Can't have a sequence of 1 or lower\n\r");
-        return NULL;
+        return entry;
     }
     else if (sequence_length == 2)
     {
-        entry->sequence = calloc(4, sizeof(char));
-        memcpy(entry->sequence, FIB_BASE, 3);
+        entry.sequence = calloc(4, sizeof(char));
+        memcpy(entry.sequence, FIB_BASE, 3);
+
+        return entry;
     }
     else if (sequence_length > 2)
     {
         char *number_digits = calloc((sequence_length - FIB_CALC_START), sizeof(char));
         uint64_t *number = calloc((sequence_length - FIB_CALC_START), sizeof(uint64_t));
 
-        RETURN_VAL_ON_NO_MEM(number_digits, "error, couldn't allocate memory!\n\r", NULL);
-        RETURN_VAL_ON_NO_MEM(number, "error, couldn't allocate memory!\n\r", NULL);
+        RETURN_VAL_ON_NO_MEM(number_digits, "error, couldn't allocate memory!\n\r", entry);
+        RETURN_VAL_ON_NO_MEM(number, "error, couldn't allocate memory!\n\r", entry);
 
         // starting values of fibonacci sequence
         uint64_t a = 0, b = 1;
 
         // taking taking the dashes in the string into account plus the terminator value \0
-        uint32_t s_len = sequence_length;
+        uint32_t s_len = sequence_length + 2;
 
         // calculate the fibonacci sequence plus the length of the number
         for (uint32_t i = 0; i < (sequence_length - FIB_CALC_START); i++)
         {
             number[i] = a + b;
 
-            number_digits[i] = (uint32_t)(floor(log10(number[i])) + 1);
+            number_digits[i] = (char)(floor(log10(number[i])) + 1);
 
             s_len += number_digits[i];
 
@@ -104,18 +116,17 @@ fib_entry_t *create_fib_entry(uint32_t sequence_length)
         }
 
         // allocate necessary memory
-        entry->sequence = calloc(s_len, sizeof(char));
+        entry.sequence = calloc(s_len, sizeof(char));
 
-        RETURN_VAL_ON_NO_MEM(entry->sequence, "error, couldn't allocate memory!\n\r", NULL);
+        RETURN_VAL_ON_NO_MEM(entry.sequence, "error, couldn't allocate memory!\n\r", entry);
 
         // copy initial string of fibonacci sequence
-        memcpy(entry->sequence, FIB_BASE, 4);
+        memcpy(entry.sequence, FIB_BASE, 4);
 
-        char *seq = entry->sequence + 4;
+        char *seq = entry.sequence + 4;
 
         for (uint32_t i = 0; i < (sequence_length - FIB_CALC_START); i++)
         {
-            // char *tmp = calloc((number_digits[i] + 1), sizeof(char));
 
 #ifdef __linux
             sprintf(seq, "%llu", number[i]);
@@ -123,8 +134,6 @@ fib_entry_t *create_fib_entry(uint32_t sequence_length)
             sprintf(seq, "%I64u", number[i]);
 #endif
             uint32_t n_len = number_digits[i];
-
-            // memcpy(seq, tmp, n_len);
 
             seq += n_len;
 

@@ -99,6 +99,13 @@ void * delete_node(node_t *node, size_t data_size);
 void * pop_node(node_t **parent, size_t data_size);
 
 /**
+ * @brief clean the complete single list
+ * 
+ * @param parent head of the list
+ */
+void flush_node(node_t **parent, size_t data_size);
+
+/**
  * @brief Set the node data object
  * 
  * @param node 

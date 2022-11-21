@@ -212,3 +212,12 @@ uint32_t get_node_list_length(node_t *head)
     
     return index;
 }
+
+void flush_node(node_t **parent, size_t data_size)
+{
+    while (*parent)
+    {
+        pop_node(parent, data_size);
+    }
+    
+}
