@@ -83,3 +83,6 @@ void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_n
 // done
 // tested
 void remove_playlist_item_by_artist_name(playlist_item_t **playlist, char * artist_name);
+// done 
+// tested
+void flush_playlist(playlist_item_t **playlist);

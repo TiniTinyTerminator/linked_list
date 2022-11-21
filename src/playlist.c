@@ -66,8 +66,6 @@ void append_playlist_item(playlist_item_t **playlist, song_info_t * info)
 {
     playlist_item_t * node = create_playlist_item();
 
-    // song_info_t data = create_song_info(song, artist);
-
     set_node_data(node, info, sizeof(song_info_t));
 
     append_node(playlist, node);
@@ -77,8 +75,6 @@ void prepend_playlist_item(playlist_item_t **playlist, song_info_t * info)
 {
     playlist_item_t * item = create_playlist_item();
 
-    // song_info_t data = create_song_info(song, artist);
-
     set_node_data(item, info, sizeof(song_info_t));
 
     prepend_node(playlist, item);
@@ -87,8 +83,6 @@ void prepend_playlist_item(playlist_item_t **playlist, song_info_t * info)
 void insert_playlist_item(playlist_item_t **playlist, uint32_t index, song_info_t * info)
 {
     playlist_item_t * item = create_playlist_item();
-
-    // song_info_t data = create_song_info(song, artist);
 
     set_node_data(item, info, sizeof(song_info_t));
 
@@ -112,7 +106,6 @@ playlist_item_t * get_playlist_item_by_song(playlist_item_t *playlist, char * so
 
         playlist = get_next_node(playlist);
 
-        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
     }
     
     return playlist;
@@ -130,7 +123,6 @@ playlist_item_t * get_playlist_item_by_artist(playlist_item_t *playlist, char * 
 
         playlist = get_next_node(playlist);
 
-        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
     }
     
     return playlist;
@@ -156,18 +148,30 @@ void play_next(playlist_item_t **playlist)
     playlist_item_t * next = get_next_node(*playlist);
     song_info_t * data = delete_node(*playlist, sizeof(song_info_t));
 
-    print_song_info(data);
+    if(data) {
+        clean_song_info(data);
 
-    clean_song_info(data);
+        free(data);
+    }
 
-    free(data);
-
-    *playlist = next;
+    if(next) {
+        print_playlist_item(next);
+        *playlist = next;
+    }
+    else 
+    {
+        printf("playlist is empty...\n\r");
+        *playlist = create_playlist_item();
+    }
 }
 
 void print_song_info(const song_info_t * song_info)
 {
-    printf("\"%s\" by %s\n\r", song_info->title, song_info->artist);
+    if(song_info->artist != NULL && song_info->title != NULL)
+        printf("\"%s\" by %s\n\r", song_info->title, song_info->artist);
+    else
+        printf("no music is enlisted\n");
+
 }
 
 void print_playlist(playlist_item_t *playlist)
@@ -183,10 +187,9 @@ void print_playlist(playlist_item_t *playlist)
 void print_playlist_item(playlist_item_t *playlist)
 {
     const song_info_t * data = get_node_data(playlist);
-
+    
     print_song_info(data);
 }
-
 void pop_playlist(playlist_item_t **playlist)
 {
     song_info_t *data = pop_node(playlist, sizeof(song_info_t));
@@ -195,7 +198,6 @@ void pop_playlist(playlist_item_t **playlist)
 
     free(data);
 }
-
 
 void remove_playlist_item_by_index(playlist_item_t **playlist, uint32_t index)
 {
@@ -223,6 +225,8 @@ void remove_playlist_item_by_song_name(playlist_item_t **playlist, char * song_n
 
         // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
     }
+
+    RETURN_ON_NO_MEM(item, "Could not find the specified song\n");
 
     if(item == *playlist)
         *playlist = get_next_node(*playlist);
@@ -252,8 +256,9 @@ void remove_playlist_item_by_artist_name(playlist_item_t **playlist, char * arti
         prev = item;
         item = get_next_node(item);
 
-        // RETURN_VAL_ON_NO_MEM(playlist, "reached end of list\n", NULL);
     }
+
+    RETURN_ON_NO_MEM(item, "Could not find the specified artist\n");
 
     if(item == *playlist)
         *playlist = get_next_node(*playlist);
@@ -265,4 +270,14 @@ void remove_playlist_item_by_artist_name(playlist_item_t **playlist, char * arti
     clean_song_info(data);
 
     free(data);
+}
+
+void flush_playlist(playlist_item_t **playlist)
+{
+
+    while (*playlist)
+    {
+        pop_playlist(playlist);
+    }
+    
 }

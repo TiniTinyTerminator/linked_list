@@ -29,7 +29,7 @@ node_t * create_node(size_t data_size)
 
     EXIT_ON_NO_MEM(tmp, "couldn't allocate memory for node!");
 
-    tmp->data = malloc(data_size * sizeof(char));
+    tmp->data = calloc(data_size, sizeof(char));
 
     EXIT_ON_NO_MEM(tmp, "couldn't allocate memory for data!");
 
